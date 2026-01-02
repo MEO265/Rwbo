@@ -1,0 +1,12 @@
+*.o
+*.so
+*.dll
+.dirstamp
+*.lo
+*.log
+*.a
+*.la
+*.lai
+*.Po
+*.Plo
+symbols.rds

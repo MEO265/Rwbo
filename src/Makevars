@@ -1,0 +1,13 @@
+all: wbo
+
+wbo:
+	cd open_wbo && $(MAKE) rs CC="$(CC)" CXX="$(CXX)" CPPFLAGS="$(CPPFLAGS) -DNDEBUG -I\"$(R_INCLUDE_DIR)\""
+	mkdir -p $(INSTDIR)/bin
+	cp -f open_wbo_static $(INSTDIR)/bin/
+
+clean: clean-src
+
+clean-src:
+	rm -f *.o *.so *.rds
+
+.PHONY: all wbo clean clean-src

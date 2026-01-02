@@ -1,0 +1,17 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^.*\.tar\.gz$
+^.*\.log$
+^README.*
+^src/README$
+cran-comments.md
+^\.github$
+^\.covrignore$
+^\.idea$
+^_pkgdown\.yml$
+^pkgdown$
+^\.lintr$
+^\.\.Rcheck$
+^.*\.ac$
+^.*\.am$
+^LICENSE\.md$
