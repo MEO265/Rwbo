@@ -143,7 +143,7 @@ protected:
                           // merging process
 
   // Heuristics
-  mpq_class *computeSparsity();
+  SparsityValue computeSparsity();
   int sparsityHeuristic();
 
   // Other

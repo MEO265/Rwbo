@@ -29,21 +29,22 @@
 #define MaxTypes_h
 
 #include <sstream>
+#include <string>
 
 namespace openwbo {
 
 #define _MAX_CLAUSES_ 3000000
 
 /** This class catches the exception that is used across the solver to indicate errors */
-class MaxSATException
-{
-  std::stringstream s;
+class MaxSATException {
+  std::string msg;
 public:
-  MaxSATException(const char* file, const int line, const char* msg)
-  {
-    s << file << ":" << line << ":" << msg;
+  MaxSATException(const char *file, const int line, const char *msg) {
+    std::ostringstream stream;
+    stream << file << ":" << line << ":" << msg;
+    this->msg = stream.str();
   }
-  const char* getMsg() const {return s.str().c_str();}
+  const char *getMsg() const { return msg.c_str(); }
 };
 
 enum { _FORMAT_MAXSAT_ = 0, _FORMAT_PB_ };

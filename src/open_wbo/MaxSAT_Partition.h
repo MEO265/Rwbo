@@ -33,11 +33,19 @@
 #include "graph/Graph.h"
 #include "graph/Graph_Communities.h"
 
+#ifdef OPENWBO_HAVE_GMP
 #include <gmpxx.h>
+#endif
 
 using NSPACE::Var;
 
 namespace openwbo {
+
+#ifdef OPENWBO_HAVE_GMP
+using SparsityValue = mpq_class;
+#else
+using SparsityValue = double;
+#endif
 
 enum graphType_ { VIG_GRAPH = 0, CVIG_GRAPH = 1, RES_GRAPH = 2 };
 
@@ -93,15 +101,17 @@ public:
     return _gc.adjCommunityWeights(index);
   }
 
-  mpq_class *computeSparsity() {
-    mpq_class *h_val_pointer = new mpq_class("0", 10);
+  SparsityValue computeSparsity() {
+    SparsityValue h_val = SparsityValue(0);
 
     for (int i = 0; i < nPartitions(); ++i) {
-      *h_val_pointer += adjacentPartitions(i).size();
+      h_val += adjacentPartitions(i).size();
     }
-    *h_val_pointer /= nPartitions() * nPartitions();
+    SparsityValue denom =
+        SparsityValue(nPartitions()) * SparsityValue(nPartitions());
+    h_val /= denom;
 
-    return h_val_pointer;
+    return h_val;
   }
 
   int nVertexes() { return _graph->nVertexes(); }

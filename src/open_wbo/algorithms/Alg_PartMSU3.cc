@@ -27,7 +27,6 @@
 
 #include "Alg_PartMSU3.h"
 
-#include <gmpxx.h>
 #include <iostream>
 
 #include <algorithm>
@@ -51,25 +50,26 @@ static inline void addVector(vec<T> &dest, vec<T> &source) {
 }
 
 // Heuristic selection used in MaxSAT Evaluation 2015
-mpq_class *PartMSU3::computeSparsity() {
-  mpq_class *h_val_pointer = new mpq_class("0", 10);
+SparsityValue PartMSU3::computeSparsity() {
+  SparsityValue h_val = SparsityValue(0);
 
   for (int i = 0; i < nPartitions(); ++i) {
-    *h_val_pointer += adjacentPartitions(i).size();
+    h_val += adjacentPartitions(i).size();
   }
-  *h_val_pointer /= nPartitions() * nPartitions();
+  SparsityValue denom =
+      SparsityValue(nPartitions()) * SparsityValue(nPartitions());
+  h_val /= denom;
 
-  return h_val_pointer;
+  return h_val;
 }
 
 int PartMSU3::sparsityHeuristic() {
   int algorithm = _ALGORITHM_PART_MSU3_;
-  mpq_class *h_val_pointer = computeSparsity();
+  SparsityValue h_val = computeSparsity();
 
-  if (*h_val_pointer < SPARSITY_HEURISTIC) {
+  if (h_val < SparsityValue(SPARSITY_HEURISTIC)) {
     algorithm = _ALGORITHM_MSU3_;
   }
-  delete h_val_pointer;
 
   return algorithm;
 }

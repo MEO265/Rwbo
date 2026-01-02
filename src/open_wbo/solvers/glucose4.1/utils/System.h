@@ -58,10 +58,11 @@ static inline double Glucose::cpuTime(void) {
 
 #endif
 
-// Laurent: I know that this will not compile directly under Windows... sorry for that
+#include <chrono>
+
 static inline double Glucose::realTime() {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (double)tv.tv_sec + (double) tv.tv_usec / 1000000; }
+    using clock = std::chrono::steady_clock;
+    return std::chrono::duration<double>(clock::now().time_since_epoch()).count();
+}
 
 #endif

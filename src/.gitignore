@@ -1,4 +1,6 @@
 *.o
+*.or
+*.d
 *.so
 *.dll
 .dirstamp
@@ -10,3 +12,4 @@
 *.Po
 *.Plo
 symbols.rds
+*.exe

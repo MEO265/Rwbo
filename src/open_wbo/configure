@@ -1,0 +1,39 @@
+#!/bin/sh
+
+GMP_LFLAGS=""
+GMP_CPPFLAGS=""
+OPENWBO_WARNFLAGS=""
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+CXX="$(R CMD config CXX)"
+CXXFLAGS="$(R CMD config CXXFLAGS)"
+CPPFLAGS="$(R CMD config CPPFLAGS)"
+LDFLAGS="$(R CMD config LDFLAGS)"
+
+cat > "$SCRIPT_DIR/conftest.cc" <<'EOF'
+#include <gmpxx.h>
+int main() { return 0; }
+EOF
+
+if $CXX $CPPFLAGS $CXXFLAGS -c "$SCRIPT_DIR/conftest.cc" -o "$SCRIPT_DIR/conftest.o" >/dev/null 2>&1; then
+  if $CXX "$SCRIPT_DIR/conftest.o" -lgmpxx -lgmp $LDFLAGS -o "$SCRIPT_DIR/conftest" >/dev/null 2>&1; then
+    GMP_LFLAGS="-lgmpxx -lgmp"
+    GMP_CPPFLAGS="-DOPENWBO_HAVE_GMP"
+  fi
+fi
+
+if [ "$(uname -s)" != "Darwin" ]; then
+  OPENWBO_WARNFLAGS="-Wno-class-memaccess"
+fi
+
+rm -f "$SCRIPT_DIR/conftest.cc" "$SCRIPT_DIR/conftest.o" "$SCRIPT_DIR/conftest" \
+  "$SCRIPT_DIR/conftest_warn.cc" "$SCRIPT_DIR/conftest_warn.o"
+
+sed -e "s|@GMP_LFLAGS@|$GMP_LFLAGS|g" \
+  -e "s|@GMP_CPPFLAGS@|$GMP_CPPFLAGS|g" \
+  -e "s|@OPENWBO_WARNFLAGS@|$OPENWBO_WARNFLAGS|g" \
+  "$SCRIPT_DIR/Makefile.in" > "$SCRIPT_DIR/Makefile.tmp"
+mv "$SCRIPT_DIR/Makefile.tmp" "$SCRIPT_DIR/Makefile"
+
+exit 0

@@ -8,7 +8,7 @@
 PWD        = $(shell pwd)
 EXEC      ?= $(notdir $(PWD))
 
-CSRCS      = $(wildcard $(PWD)/*.cc) 
+CSRCS      = $(wildcard $(PWD)/*.cc)
 DSRCS      = $(foreach dir, $(DEPDIR), $(filter-out $(MROOT)/$(dir)/Main.cc, $(wildcard $(MROOT)/$(dir)/*.cc)))
 CHDRS      = $(wildcard $(PWD)/*.h)
 COBJS      = $(CSRCS:.cc=.o) $(DSRCS:.cc=.o)
@@ -19,14 +19,16 @@ RCOBJS     = $(addsuffix r,  $(COBJS))
 
 CXX       ?= g++
 CFLAGS    ?= -Wall -Wno-parentheses -std=c++11
-LFLAGS    ?= -Wall -lpthread 
+LFLAGS    ?= -Wall -lpthread
+DEPFLAGS  ?= -MMD -MP
 
 COPTIMIZE ?= -O3
 
 CFLAGS    += -I$(MROOT) -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS
 LFLAGS    += -lz
 
-.PHONY : s p d r rs clean 
+DEPFILES   = $(COBJS:%=%.d) $(PCOBJS:%=%.d) $(DCOBJS:%=%.d) $(RCOBJS:%=%.d)
+.PHONY : s p d r rs clean
 
 s:	$(EXEC)
 p:	$(EXEC)_profile
@@ -68,7 +70,7 @@ lib$(LIB)_release.a:	$(filter-out */Main.or, $(RCOBJS))
 ## Build rule
 %.o %.op %.od %.or:	%.cc
 	@echo Compiling: $(subst $(MROOT)/,,$@)
-	@$(CXX) $(CFLAGS) -c -o $@ $<
+	@$(CXX) $(CFLAGS) $(DEPFLAGS) -MF $@.d -MT $@ -c -o $@ $<
 
 ## Linking rules (standard/profile/debug/release)
 $(EXEC) $(EXEC)_profile $(EXEC)_debug $(EXEC)_release $(EXEC)_static:
@@ -87,23 +89,11 @@ libs libp libd libr:
 
 ## Clean rule
 allclean: clean
-	
+
 	@rm -f ../simp/*.o ../simp/*.or ../simp/*.od  ../core/*.o ../core/*.or ../core/*.od
 clean:
 	rm -f $(EXEC) $(EXEC)_profile $(EXEC)_debug $(EXEC)_release $(EXEC)_static \
-	  $(COBJS) $(PCOBJS) $(DCOBJS) $(RCOBJS) *.core depend.mk 
-
-## Make dependencies
-depend.mk: $(CSRCS) $(CHDRS)
-	@echo Making dependencies
-	@$(CXX) $(CFLAGS) -I$(MROOT) \
-	   $(CSRCS) -MM | sed 's|\(.*\):|$(PWD)/\1 $(PWD)/\1r $(PWD)/\1d $(PWD)/\1p:|' > depend.mk
-	@for dir in $(DEPDIR); do \
-	      if [ -r $(MROOT)/$${dir}/depend.mk ]; then \
-		  echo Depends on: $${dir}; \
-		  cat $(MROOT)/$${dir}/depend.mk >> depend.mk; \
-	      fi; \
-	  done
+	  $(COBJS) $(PCOBJS) $(DCOBJS) $(RCOBJS) $(DEPFILES) *.core
 
 -include $(MROOT)/mtl/config.mk
--include depend.mk
+-include $(DEPFILES)

@@ -28,11 +28,6 @@
 #ifndef __PB_PARSER__
 #define __PB_PARSER__
 
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -148,7 +143,7 @@ protected:
   };
 
   char *_fileStr;
-  int _fd;
+  std::string _fileBuffer;
 
   vec<int64_t> _coefficients;
   vec<int> _constraintVariables;

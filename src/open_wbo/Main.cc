@@ -259,7 +259,6 @@ int main(int argc, char **argv) {
       exit(_ERROR_);
     }
 
-    signal(SIGXCPU, SIGINT_exit);
     signal(SIGTERM, SIGINT_exit);
 
     if (argc == 1) {

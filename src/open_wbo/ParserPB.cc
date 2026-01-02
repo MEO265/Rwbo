@@ -28,7 +28,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <unistd.h>
+#include <iterator>
 
 #include "ParserPB.h"
 
@@ -47,32 +47,37 @@ ParserPB::~ParserPB() {}
 int ParserPB::parse(char *fileName) {
   _highestCoeffSum = 0;
 
-  if ((_fd = open(fileName, O_RDONLY)) < 0) {
+  cout << "c Instance file " << fileName << endl;
+
+  std::ifstream file(fileName, std::ios::in | std::ios::binary);
+  if (!file) {
     printf("c Error: Unable to open input stream for file %s\n", fileName);
     printf("s UNKNOWN\n");
     exit(_ERROR_);
   }
-  cout << "c Instance file " << fileName << endl;
 
-  struct stat statbuf;
-  if (fstat(_fd, &statbuf) < 0) {
+  file.seekg(0, std::ios::end);
+  std::streamoff size = file.tellg();
+  if (size < 0) {
     cout << "c Error: Unable to get size of file " << fileName << endl;
     printf("s UNKNOWN\n");
     exit(_ERROR_);
   }
-  cout << "c File size is " << statbuf.st_size << " bytes." << endl;
+  file.seekg(0, std::ios::beg);
 
-  if ((_fileStr = (char *)mmap(0, statbuf.st_size, PROT_READ, MAP_SHARED, _fd,
-                               0)) == (caddr_t)-1) {
-    cout << "c Error: Unable to put in memory file " << fileName << endl;
+  _fileBuffer.assign(std::istreambuf_iterator<char>(file),
+                     std::istreambuf_iterator<char>());
+  if (!file && !file.eof()) {
+    cout << "c Error: Unable to read file " << fileName << endl;
     printf("s UNKNOWN\n");
     exit(_ERROR_);
   }
-  char *startMap = _fileStr;
 
-  // vmm - Check why I need to do this!!!!
-  if (strlen(_fileStr) != (unsigned)statbuf.st_size)
-    _fileStr[statbuf.st_size] = '\0';
+  cout << "c File size is " << _fileBuffer.size() << " bytes." << endl;
+
+  if (_fileBuffer.empty() || _fileBuffer.back() != '\0')
+    _fileBuffer.push_back('\0');
+  _fileStr = &_fileBuffer[0];
 
   int line = 0;
   while (peek_char() != '\0') {
@@ -85,10 +90,6 @@ int ParserPB::parse(char *fileName) {
     }
     line++;
   }
-
-  // Clear memory map of input file.
-  munmap(startMap, statbuf.st_size);
-  close(_fd);
 
   // cout << "c Highest Coefficient sum: " << _highestCoeffSum << endl;
 
