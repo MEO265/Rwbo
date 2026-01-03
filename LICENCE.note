@@ -1,0 +1,22 @@
+Rwbo as a whole is distributed under GPL (>= 3), but the open-wbo C++-library which it is based on is distributed under MIT license.
+The license file of the Open-WBO library can be found in the folder `src/open_wbo`.
+
+The following changes have been made to the original open-wbo code:
+- The following optional parts have been removed to reduce size and complexity:
+  - Unused solvers: glucose4.0, minisat, minisat2.2, riss
+  - Additional materials in folders: tools, test, papers
+- Adaptations necessary for CRAN compliance:
+    - Adjustments required to compile under Windows:
+        - Remove use of `sys/mman.h` in open-wbo
+        - Modify `Glucose::realTime()`` to not use `gettimeofday()`
+        - Use `putc`instead of `putc_unlocked` (slower but portable)
+    - Adjustments required to compile under MacOS:
+        - Add fallback for missing `gmpxx.h`
+        - Disable static build if build on MacOS
+        - Add configuration file
+    - Portability adjustments:
+        - Simplified Makefile without use of unix commands (+ add of configure file)
+- Adaptations maybe not totally necessary for CRAN compliance but marked by R CMD check as issues:
+  - Supress some warnings with "-Wno-class-memaccess" since they are a known part of the bundled code
+
+
