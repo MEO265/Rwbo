@@ -1,6 +1,6 @@
 Package: Rwbo
 Title: Run the Open-WBO MaxSAT Solver from R
-Version: 0.0.0.9999
+Version: 0.1.0
 Authors@R: c(
 	person("Matthias", "Ollech", email = "ollech@gmx.de", role = c("aut", "cre")),
 	person("Ruben Martins, Vasco Manquinho, Ines Lynce", role = "cph",
