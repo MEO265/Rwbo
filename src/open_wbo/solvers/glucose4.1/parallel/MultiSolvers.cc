@@ -74,16 +74,23 @@ IntOption opt_fifoSizeByCore(_parallel, "fifosize", "Size of the FIFO structure 
 BoolOption opt_dontExportDirectReusedClauses(_cunstable, "reusedClauses", "Don't export directly reused clauses", false);
 BoolOption opt_plingeling(_cunstable, "plingeling", "plingeling strategy for sharing clauses (exploratory feature)", false);
 
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include <time.h>
+
+static inline double cpuTime(void) {
+    return (double)clock() / CLOCKS_PER_SEC;
+}
+#else
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
-
 
 static inline double cpuTime(void) {
     struct rusage ru;
     getrusage(RUSAGE_SELF, &ru);
     return (double) ru.ru_utime.tv_sec + (double) ru.ru_utime.tv_usec / 1000000;
 }
+#endif
 
 
 void MultiSolvers::informEnd(lbool res) {
@@ -696,4 +703,3 @@ lbool MultiSolvers::solve() {
     */
 
 }
-
