@@ -1,4 +1,4 @@
-`Rucdd` is based on the [Open-WBO](https://github.com/sat-group/open-wbo) an extensible and modular open-source MaxSAT Solver.
+`Rwbo` is based on the [Open-WBO](https://github.com/sat-group/open-wbo) an extensible and modular open-source MaxSAT Solver.
 
 The following changes have been made to the original open-wbo code:
 - The following optional parts have been removed to reduce size and complexity:
