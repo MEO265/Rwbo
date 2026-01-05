@@ -3,20 +3,20 @@
 SOLVER     = glucose4.1
 #
 # The following values should be defined in the included file:
-# VERSION    = core or simp
+# VERSION    = core, simp, or parallel
 # SOLVERNAME = name of the SAT solver
 # SOLVERDIR  = subdirectory of the SAT solver
 # NSPACE     = namespace of the SAT solver
 #
 include $(PWD)/solvers/$(SOLVER).mk
-VERSION    = core
+VERSION    = parallel
 SOLVERNAME = "Glucose4.1"
 SOLVERDIR  = glucose4.1
 NSPACE     = Glucose
 
 # THE REMAINING OF THE MAKEFILE SHOULD BE LEFT UNCHANGED
 EXEC       = open-wbo
-DEPDIR     = mtl utils core ../../encodings ../../algorithms ../../graph ../../classifier
+DEPDIR     = mtl utils core simp parallel ../../encodings ../../algorithms ../../graph ../../classifier
 MROOT      = $(PWD)/solvers/$(SOLVERDIR)
 GMP_CPPFLAGS = @GMP_CPPFLAGS@
 OPENWBO_WARNFLAGS = @OPENWBO_WARNFLAGS@
