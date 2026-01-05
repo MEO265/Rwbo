@@ -19,6 +19,6 @@ clean-src:
 	rm -r $(INSTDIR)
 
 clean-wbo:
-	cd open_wbo && $(MAKE) allclean
+	cd open_wbo && $(MAKE) allclean && rm -f Makefile
 
 .PHONY: all wbo clean clean-src
