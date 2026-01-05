@@ -9,7 +9,7 @@ SOLVER     = glucose4.1
 # NSPACE     = namespace of the SAT solver
 #
 include $(PWD)/solvers/$(SOLVER).mk
-VERSION    = core
+VERSION    = parallel
 SOLVERNAME = "Glucose4.1"
 SOLVERDIR  = glucose4.1
 NSPACE     = Glucose
