@@ -7,8 +7,10 @@ Authors@R: c(
 	comment = "Copyright holders of included Open-WBO code")
   )
 Description:
-    Provides a wrapper for running the bundled 'open-wbo' MaxSAT solver from R.
-    Users can pass command-line arguments to the solver and capture its output as a character string or file.
+    Provides a wrapper for running the bundled 'Open-WBO' MaxSAT solver
+    (<https://github.com/sat-group/open-wbo>) from R. Users can pass
+    command-line arguments to the solver and capture its output as a character
+    string or file.
 License: GPL (>= 3)
 RoxygenNote: 7.3.2
 Encoding: UTF-8
