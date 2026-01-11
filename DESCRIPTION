@@ -1,16 +1,16 @@
 Package: Rwbo
-Title: Run the Open-WBO MaxSAT Solver from R
-Version: 0.1.0
+Title: Run the 'Open-WBO' MaxSAT Solver
+Version: 0.1.1
 Authors@R: c(
 	person("Matthias", "Ollech", email = "ollech@gmx.com", role = c("aut", "cre")),
 	person("Ruben Martins, Vasco Manquinho, Ines Lynce", role = "cph",
 	comment = "Copyright holders of included Open-WBO code")
   )
 Description:
-    Provides a wrapper for running the bundled 'Open-WBO' MaxSAT solver
-    (<https://github.com/sat-group/open-wbo>) from R. Users can pass
-    command-line arguments to the solver and capture its output as a character
-    string or file.
+    Provides a wrapper for running the bundled 'Open-WBO' Maximum Satisfiability
+    (MaxSAT) solver (<https://github.com/sat-group/open-wbo>).
+    Users can pass command-line arguments to the solver and capture its output
+    as a character string or file.
 License: GPL (>= 3)
 RoxygenNote: 7.3.2
 Encoding: UTF-8
