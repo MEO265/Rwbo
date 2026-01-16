@@ -11,6 +11,19 @@ CXXFLAGS="$(R CMD config CXXFLAGS)"
 CPPFLAGS="$(R CMD config CPPFLAGS)"
 LDFLAGS="$(R CMD config LDFLAGS)"
 
+clean_flags() {
+  cleaned=""
+  for flag in "$@"; do
+    if [ "$flag" != "--" ]; then
+      cleaned="$cleaned $flag"
+    fi
+  done
+  echo "$cleaned" | sed 's/^ //'
+}
+
+CPPFLAGS="$(clean_flags $CPPFLAGS)"
+CXXFLAGS="$(clean_flags $CXXFLAGS)"
+
 cat > "$SCRIPT_DIR/conftest.cc" <<'EOF'
 #include <gmpxx.h>
 int main() { return 0; }
