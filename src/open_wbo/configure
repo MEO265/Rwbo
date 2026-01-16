@@ -32,6 +32,8 @@ rm -f "$SCRIPT_DIR/conftest.cc" "$SCRIPT_DIR/conftest.o" "$SCRIPT_DIR/conftest" 
 
 sed -e "s|@GMP_LFLAGS@|$GMP_LFLAGS|g" \
   -e "s|@GMP_CPPFLAGS@|$GMP_CPPFLAGS|g" \
+  -e "s|@R_CPPFLAGS@|$CPPFLAGS|g" \
+  -e "s|@R_CXXFLAGS@|$CXXFLAGS|g" \
   -e "s|@OPENWBO_WARNFLAGS@|$OPENWBO_WARNFLAGS|g" \
   "$SCRIPT_DIR/Makefile.in" > "$SCRIPT_DIR/Makefile.tmp"
 mv "$SCRIPT_DIR/Makefile.tmp" "$SCRIPT_DIR/Makefile"
