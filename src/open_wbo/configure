@@ -49,6 +49,10 @@ sed -e "s|@GMP_LFLAGS@|$GMP_LFLAGS|g" \
   -e "s|@R_CXXFLAGS@|$CXXFLAGS|g" \
   -e "s|@OPENWBO_WARNFLAGS@|$OPENWBO_WARNFLAGS|g" \
   "$SCRIPT_DIR/Makefile.in" > "$SCRIPT_DIR/Makefile.tmp"
-mv "$SCRIPT_DIR/Makefile.tmp" "$SCRIPT_DIR/Makefile"
+sed -e 's/[[:space:]]--[[:space:]]/ /g' \
+  -e 's/^[[:space:]]*--[[:space:]]//g' \
+  -e 's/[[:space:]]--[[:space:]]*$//g' \
+  "$SCRIPT_DIR/Makefile.tmp" > "$SCRIPT_DIR/Makefile"
+rm -f "$SCRIPT_DIR/Makefile.tmp"
 
 exit 0
