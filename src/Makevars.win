@@ -5,8 +5,7 @@ all: wbo
 wbo:
 	cd open_wbo && sh ./configure
 	mkdir -p $(INSTDIR)/bin
-	if if [ "$${RWBO_FORCE_STATIC_FAIL}" = "1" ]; then false; else (cd open_wbo && $(MAKE) rs); fi \
-		&& [ -f open_wbo/open-wbo_static$(EXEEXT) ]; then \
+	if (cd open_wbo && $(MAKE) rs) && [ -f open_wbo/open-wbo_static$(EXEEXT) ]; then \
 		cp -f open_wbo/open-wbo_static$(EXEEXT) $(INSTDIR)/bin/open-wbo_static$(EXEEXT); \
 	else \
 		(cd open_wbo && $(MAKE) r); \
