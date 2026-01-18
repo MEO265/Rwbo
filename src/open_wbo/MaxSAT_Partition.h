@@ -33,19 +33,11 @@
 #include "graph/Graph.h"
 #include "graph/Graph_Communities.h"
 
-#ifdef OPENWBO_HAVE_GMP
-#include <gmpxx.h>
-#endif
-
 using NSPACE::Var;
 
 namespace openwbo {
 
-#ifdef OPENWBO_HAVE_GMP
-using SparsityValue = mpq_class;
-#else
 using SparsityValue = double;
-#endif
 
 enum graphType_ { VIG_GRAPH = 0, CVIG_GRAPH = 1, RES_GRAPH = 2 };
 
