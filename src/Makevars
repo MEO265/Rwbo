@@ -20,4 +20,4 @@ clean-src:
 clean-wbo:
 	cd open_wbo && $(MAKE) allclean
 
-.PHONY: all wbo clean clean-src
+.PHONY: all wbo clean clean-src clean-wbo
