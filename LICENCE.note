@@ -11,12 +11,11 @@ The following changes have been made to the original open-wbo code:
         - Modify `Glucose::realTime()`` to not use `gettimeofday()`
         - Use `putc`instead of `putc_unlocked` (slower but portable)
     - Adjustments required to compile under MacOS:
-        - Add fallback for missing `gmpxx.h`
+        - Build without `gmpxx.h`
         - Disable static build if build on MacOS
         - Add configuration file
     - Portability adjustments:
         - Simplified Makefile without use of unix commands (+ add of configure file)
 - Adaptations maybe not totally necessary for CRAN compliance but marked by R CMD check as issues:
   - Supress some warnings with "-Wno-class-memaccess" since they are a known part of the bundled code
-
 

@@ -10,7 +10,7 @@ The following changes have been made to the original open-wbo code:
         - Modify `Glucose::realTime()`` to not use `gettimeofday()`
         - Use `putc`instead of `putc_unlocked` (slower but portable)
     - Adjustments required to compile under MacOS:
-        - Add fallback for missing `gmpxx.h`
+        - Build without `gmpxx.h`
         - Disable static build if build on MacOS
         - Add configuration file
     - Portability adjustments:
