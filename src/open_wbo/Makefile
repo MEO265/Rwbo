@@ -18,7 +18,7 @@ NSPACE     = Glucose
 EXEC       = open-wbo
 DEPDIR     = mtl utils core ../../encodings ../../algorithms ../../graph ../../classifier
 MROOT      = $(PWD)/solvers/$(SOLVERDIR)
-OPENWBO_WARNFLAGS = @OPENWBO_WARNFLAGS@
+OPENWBO_WARNFLAGS = -Wno-class-memaccess
 CFLAGS     = -Wall -Wno-parentheses -std=c++11 -DNSPACE=$(NSPACE) -DSOLVERNAME=$(SOLVERNAME) -DVERSION=$(VERSION) $(OPENWBO_WARNFLAGS)
 
 include $(PWD)/solvers/$(SOLVERDIR)/mtl/template.mk

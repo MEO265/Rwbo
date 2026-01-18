@@ -3,8 +3,7 @@ INSTDIR=../inst
 all: wbo
 
 wbo:
-	cd open_wbo && sh ./configure
-	cd open_wbo && if [ "$$(uname -s)" = "Darwin" ]; then $(MAKE) r; else $(MAKE) rs; fi
+	cd open_wbo && if [ "$$(uname -s)" = "Darwin" ]; then $(MAKE) r OPENWBO_WARNFLAGS=; else $(MAKE) rs; fi
 	mkdir -p $(INSTDIR)/bin
 	if [ "$$(uname -s)" = "Darwin" ]; then \
 		cp -f open_wbo/open-wbo_release$(EXEEXT) $(INSTDIR)/bin/open-wbo_static$(EXEEXT); \
@@ -19,6 +18,6 @@ clean-src:
 	rm -r $(INSTDIR)
 
 clean-wbo:
-	cd open_wbo && $(MAKE) allclean && rm -f Makefile
+	cd open_wbo && $(MAKE) allclean
 
 .PHONY: all wbo clean clean-src clean-wbo
