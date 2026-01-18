@@ -3,12 +3,16 @@ INSTDIR=../inst
 all: wbo
 
 wbo:
-	cd open_wbo && if [ "$$(uname -s)" = "Darwin" ]; then $(MAKE) r OPENWBO_WARNFLAGS=; else $(MAKE) rs; fi
+	cd open_wbo && if [ "$$(uname -s)" = "Darwin" ]; then $(MAKE) r OPENWBO_WARNFLAGS=; else $(MAKE) rs || $(MAKE) r; fi
 	mkdir -p $(INSTDIR)/bin
 	if [ "$$(uname -s)" = "Darwin" ]; then \
 		cp -f open_wbo/open-wbo_release$(EXEEXT) $(INSTDIR)/bin/open-wbo_static$(EXEEXT); \
 	else \
-		cp -f open_wbo/open-wbo_static$(EXEEXT) $(INSTDIR)/bin/open-wbo_static$(EXEEXT); \
+		if [ -f open_wbo/open-wbo_static$(EXEEXT) ]; then \
+			cp -f open_wbo/open-wbo_static$(EXEEXT) $(INSTDIR)/bin/open-wbo_static$(EXEEXT); \
+		else \
+			cp -f open_wbo/open-wbo_release$(EXEEXT) $(INSTDIR)/bin/open-wbo_static$(EXEEXT); \
+		fi; \
 	fi
 
 clean: clean-src clean-wbo
