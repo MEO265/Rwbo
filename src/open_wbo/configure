@@ -10,8 +10,6 @@ if [ "$(uname -s)" != "Darwin" ]; then
   OPENWBO_WARNFLAGS="-Wno-class-memaccess"
 fi
 
-rm -f "$SCRIPT_DIR/conftest_warn.cc" "$SCRIPT_DIR/conftest_warn.o"
-
 sed -e "s|@OPENWBO_WARNFLAGS@|$OPENWBO_WARNFLAGS|g" \
   "$SCRIPT_DIR/Makefile.in" > "$SCRIPT_DIR/Makefile.tmp"
 mv "$SCRIPT_DIR/Makefile.tmp" "$SCRIPT_DIR/Makefile"
