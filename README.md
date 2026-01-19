@@ -13,6 +13,10 @@
 `Rwbo` is an R wrapper around the C++-based command-line tool [Open-WBO](https://github.com/sat-group/open-wbo), 
 an extensible and modular open-source MaxSAT Solver. The package exposes a single function that enables calling Open-WBO.
 
+## Build notes
+
+Linux builds on musl skip glibc-only FPU control calls for portability.
+
 ## Contribution
 
 If you are interested in contributing to this package, feel free to create an issue or a pull request.
