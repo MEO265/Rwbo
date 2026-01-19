@@ -22,6 +22,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #define Glucose_System_h
 
 #if defined(__linux__) && defined(__GLIBC__)
+// fpu_control.h is glibc-specific; non-glibc Linux builds skip FPU control setup.
 #include <fpu_control.h>
 #endif
 
