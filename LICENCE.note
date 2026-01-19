@@ -15,5 +15,6 @@ The following changes have been made to the original open-wbo code:
         - Disable static build if build on MacOS
     - Portability adjustments:
         - Simplified Makefile without use of unix commands
+        - Guard glibc-only FPU control to allow musl builds
 - Adaptations maybe not totally necessary for CRAN compliance but marked by R CMD check as issues:
   - Supress some warnings with "-Wno-class-memaccess" since they are a known part of the bundled code

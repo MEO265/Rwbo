@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
   try {
     NSPACE::setUsageHelp("c USAGE: %s [options] <input-file>\n\n");
 
-#if defined(__linux__)
+#if defined(__linux__) && defined(__GLIBC__) && (defined(__i386__) || defined(__x86_64__))
     fpu_control_t oldcw, newcw;
     _FPU_GETCW(oldcw);
     newcw = (oldcw & ~_FPU_EXTENDED) | _FPU_DOUBLE;
