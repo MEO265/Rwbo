@@ -1,5 +1,8 @@
 # Rwbo (Development Version)
 
+* Fix a native LinearSU/BMO crash for WCNF without soft clauses by using normal
+  search when the objective has no weight levels. Hard-only SAT, UNSAT, and empty
+  hard clauses now return their regular solver results with `-algorithm=1`.
 * Quote each command-line argument so input paths can contain spaces and shell
   metacharacters.
 * Report unexpected solver exit statuses as R errors while accepting regular

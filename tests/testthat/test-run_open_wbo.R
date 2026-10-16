@@ -47,6 +47,42 @@ test_that("run_open_wbo solves a tiny MaxSAT instance", {
   expect_optimal_wcnf(output, wcnf, objective = 1.0)
 })
 
+test_that("LinearSU handles satisfiable and unsatisfiable WCNF without soft clauses", {
+  sat_wcnf <- write_wcnf(c("p wcnf 2 2 10", "10 1 0", "10 -2 0"))
+  unsat_wcnf <- write_wcnf(c("p wcnf 1 2 10", "10 1 0", "10 -1 0"))
+  with_soft <- write_wcnf(c("p wcnf 1 3 10", "10 1 0", "10 -1 0", "1 1 0"))
+
+  for (bmo in c("-bmo", "-no-bmo")) {
+    output <- run_open_wbo(c("-algorithm=1", bmo, sat_wcnf))
+    expect_optimal_wcnf(output, sat_wcnf, objective = 0.0)
+
+    for (wcnf in c(unsat_wcnf, with_soft)) {
+      output <- run_open_wbo(c("-algorithm=1", bmo, wcnf))
+      lines <- strsplit(output, "\n", fixed = TRUE)[[1L]]
+      expect_identical(grep("^s ", lines, value = TRUE), "s UNSATISFIABLE")
+      expect_length(grep("^v ", lines), 0L)
+    }
+  }
+})
+
+test_that("run_open_wbo accepts empty hard clauses as UNSAT", {
+  instances <- list(
+    c("p wcnf 0 1 10", "10 0"),
+    c("p wcnf 1 1 10", "10 0"),
+    c("p wcnf 1 2 10", "10 1 0", "10 0"),
+    c("p wcnf 1 2 10", "10 0", "1 1 0")
+  )
+  for (instance in instances) {
+    wcnf <- write_wcnf(instance)
+    for (flags in list(character(), "-algorithm=1", c("-algorithm=1", "-no-bmo"))) {
+      output <- run_open_wbo(c(flags, wcnf))
+      lines <- strsplit(output, "\n", fixed = TRUE)[[1L]]
+      expect_identical(grep("^s ", lines, value = TRUE), "s UNSATISFIABLE")
+      expect_length(grep("^v ", lines), 0L)
+    }
+  }
+})
+
 test_that("run_open_wbo reports unsat for conflicting hard clauses", {
   wcnf <- write_wcnf(c(
     "p wcnf 1 2 10",
