@@ -189,28 +189,28 @@ test_that("run_open_wbo includes solver diagnostics for a missing input file", {
 test_that("run_open_wbo returns output for each valid solver exit status", {
   results <- c("c regular exit", "s SATISFIABLE", "s UNSATISFIABLE", "s OPTIMUM FOUND", "s UNKNOWN")
   for (status in c(0L, 10L, 20L, 30L, 40L)) {
-    output_file <- NULL
+    capture <- new.env(parent = emptyenv())
     lines <- c("o 1", results[[match(status, c(0L, 10L, 20L, 30L, 40L))]])
     runner <- runner_with_bindings(
       system.file = function(...) {
         return("open-wbo_static")
       },
       system2 = function(command, args, stdout, stderr, timeout) {
-        output_file <<- stdout
+        capture$output_file <- stdout
         writeLines(lines, stdout)
         return(status)
       }
     )
 
     expect_identical(runner(args = "input.wcnf"), paste(lines, collapse = "\n"))
-    expect_false(file.exists(output_file))
+    expect_false(file.exists(capture$output_file))
   }
 })
 
 test_that("run_open_wbo preserves physical lines, spaces, and incomplete last lines", {
   model_line <- paste("v", paste(c(seq_len(2500L), -seq_len(2500L)), collapse = " "))
   lines <- c("c diagnostic  ", "", model_line, "s UNKNOWN", "", "c final line  ")
-  output_file <- NULL
+  capture <- new.env(parent = emptyenv())
   runner <- runner_with_bindings(
     system.file = function(...) {
       return("solver with spaces & symbols")
@@ -222,7 +222,7 @@ test_that("run_open_wbo preserves physical lines, spaces, and incomplete last li
       expect_identical(timeout, 7L)
       expect_type(stdout, "character")
       expect_length(stdout, 1L)
-      output_file <<- stdout
+      capture$output_file <- stdout
       cat(paste(lines, collapse = "\n"), file = stdout)
       return(40L)
     }
@@ -232,36 +232,36 @@ test_that("run_open_wbo preserves physical lines, spaces, and incomplete last li
     runner(c("-algorithm=1", "input with spaces & symbols.wcnf"), timeout = 7L),
     paste(lines, collapse = "\n")
   )
-  expect_false(file.exists(output_file))
+  expect_false(file.exists(capture$output_file))
 })
 
 test_that("run_open_wbo returns an empty string for empty stdout", {
-  output_file <- NULL
+  capture <- new.env(parent = emptyenv())
   runner <- runner_with_bindings(
     system.file = function(...) {
       return("open-wbo_static")
     },
     system2 = function(command, args, stdout, stderr, timeout) {
-      output_file <<- stdout
+      capture$output_file <- stdout
       writeLines(character(), stdout)
       return(0L)
     }
   )
 
   expect_identical(runner(), "")
-  expect_false(file.exists(output_file))
+  expect_false(file.exists(capture$output_file))
 })
 
 test_that("run_open_wbo reports unexpected exit statuses and removes stdout files", {
   for (status in c(1L, 5L, 50L, 127L, 124L)) {
-    output_file <- NULL
+    capture <- new.env(parent = emptyenv())
     lines <- c("c diagnostic", "", "s UNKNOWN")
     runner <- runner_with_bindings(
       system.file = function(...) {
         return("open-wbo_static")
       },
       system2 = function(command, args, stdout, stderr, timeout) {
-        output_file <<- stdout
+        capture$output_file <- stdout
         writeLines(lines, stdout)
         warning("system2 status warning")
         return(status)
@@ -276,18 +276,18 @@ test_that("run_open_wbo reports unexpected exit statuses and removes stdout file
       paste0("open-wbo_static failed with exit status ", status, ".")
     }
     expect_identical(conditionMessage(error), paste(c(message, lines), collapse = "\n"))
-    expect_false(file.exists(output_file))
+    expect_false(file.exists(capture$output_file))
   }
 })
 
 test_that("run_open_wbo treats exit status 5 with empty stdout as an error", {
-  output_file <- NULL
+  capture <- new.env(parent = emptyenv())
   runner <- runner_with_bindings(
     system.file = function(...) {
       return("open-wbo_static")
     },
     system2 = function(command, args, stdout, stderr, timeout) {
-      output_file <<- stdout
+      capture$output_file <- stdout
       writeLines(character(), stdout)
       return(5L)
     }
@@ -296,18 +296,18 @@ test_that("run_open_wbo treats exit status 5 with empty stdout as an error", {
   error <- tryCatch(runner(), error = identity)
   expect_s3_class(error, "error")
   expect_identical(conditionMessage(error), "open-wbo_static failed with exit status 5.")
-  expect_false(file.exists(output_file))
+  expect_false(file.exists(capture$output_file))
 })
 
 test_that("run_open_wbo removes stdout files when launching or reading fails", {
   for (failure in c("launch", "read")) {
-    output_file <- NULL
+    capture <- new.env(parent = emptyenv())
     runner <- runner_with_bindings(
       system.file = function(...) {
         return("open-wbo_static")
       },
       system2 = function(command, args, stdout, stderr, timeout) {
-        output_file <<- stdout
+        capture$output_file <- stdout
         writeLines("c partial output", stdout)
         if (failure == "launch") {
           stop("launch failed")
@@ -320,7 +320,7 @@ test_that("run_open_wbo removes stdout files when launching or reading fails", {
     )
 
     expect_error(runner(), paste(failure, "failed"), fixed = TRUE)
-    expect_false(file.exists(output_file))
+    expect_false(file.exists(capture$output_file))
   }
 })
 
