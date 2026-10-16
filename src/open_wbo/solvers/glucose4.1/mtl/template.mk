@@ -5,7 +5,7 @@
 ##        "make d"  for a debug version (no optimizations).
 ##        "make"    for the standard version (optimized, but with debug information and assertions active)
 
-PWD        = $(shell pwd)
+PWD        = $(CURDIR)
 EXEC      ?= $(notdir $(PWD))
 
 CSRCS      = $(wildcard $(PWD)/*.cc)
@@ -70,12 +70,12 @@ lib$(LIB)_release.a:	$(filter-out */Main.or, $(RCOBJS))
 ## Build rule
 %.o %.op %.od %.or:	%.cc
 	@echo Compiling: $(subst $(MROOT)/,,$@)
-	@$(CXX) $(CFLAGS) $(DEPFLAGS) -MF $@.d -MT $@ -c -o $@ $<
+	@$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) $(DEPFLAGS) -MF $@.d -MT $@ -c -o $@ $<
 
 ## Linking rules (standard/profile/debug/release)
 $(EXEC) $(EXEC)_profile $(EXEC)_debug $(EXEC)_release $(EXEC)_static:
 	@echo Linking: "$@ ( $(foreach f,$^,$(subst $(MROOT)/,,$f)) )"
-	@$(CXX) $^ $(LFLAGS) -o $@
+	@$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LFLAGS) -o $@
 
 ## Library rules (standard/profile/debug/release)
 lib$(LIB)_standard.a lib$(LIB)_profile.a lib$(LIB)_release.a lib$(LIB)_debug.a:

@@ -4,10 +4,14 @@
 \alias{run_open_wbo}
 \title{Run open-wbo_static}
 \usage{
-run_open_wbo(args = character())
+run_open_wbo(args = character(), timeout = 0L)
 }
 \arguments{
-\item{args}{Character vector of arguments passed to `open-wbo_static`.}
+\item{args}{Character vector with one unquoted argument per element, passed
+to `open-wbo_static`.}
+
+\item{timeout}{Maximum elapsed time in whole seconds, as a non-negative
+number. The default, 0, imposes no time limit. A timeout raises an error.}
 }
 \value{
 Character string containing the output from `open-wbo_static`.
@@ -16,16 +20,26 @@ Character string containing the output from `open-wbo_static`.
 Run the bundled `open-wbo_static` binary with user-supplied parameters.
 }
 \details{
-`args` is passed directly to the `open-wbo_static` command-line tool, so supply
-the path to a WCNF file along with any solver flags you want to enable. To see
-the full list of supported options for your bundled binary, run
+Supply one unquoted command-line argument per element of `args`, including
+the path to a WCNF file and any solver flags. Arguments are quoted internally,
+so paths containing spaces do not need extra quoting. To see the full list of
+supported options for your bundled binary, run
 `run_open_wbo("--help")`. The help text is emitted on stderr, so it appears in
 your console but is not returned by `run_open_wbo()`.
 
-Common solver options include toggles such as `-forceunsat`/`-no-forceunsat`,
-`-adapt`/`-no-adapt`, `-print-model`/`-no-print-model`, and parameter settings
-like `-algorithm <int>`, `-cpu-lim <int>`, `-mem-lim <int>`, and
-`-verbosity <int>`.
+Common solver options include toggles such as `-bmo`/`-no-bmo`,
+`-symmetry`/`-no-symmetry`, and `-print-model`/`-no-print-model`.
+Numeric settings use `-name=value` syntax, for example `-algorithm=1`,
+`-cpu-lim=60`, `-mem-lim=1024`, and `-verbosity=1`.
+The solver's CPU and memory limits are unavailable on Windows; use `timeout`
+to limit elapsed runtime on all platforms.
+
+Solver exit statuses 0, 10 (SAT), 20 (UNSAT), 30 (OPTIMUM), and 40 (UNKNOWN)
+return the captured output. Other exit statuses raise an error containing the
+status and any captured output. Solver diagnostics on stderr remain visible
+in the console.
+Output is captured through a temporary file to preserve complete physical
+lines, including long model assignments on Windows.
 }
 \examples{
 \donttest{
@@ -36,5 +50,6 @@ writeLines(c(
   "1 -1 0"
 ), wcnf_file)
 run_open_wbo(args = wcnf_file)
+run_open_wbo(args = c("-algorithm=1", "-no-print-model", wcnf_file))
 }
 }

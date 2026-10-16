@@ -1,6 +1,8 @@
 `Rwbo` is based on the [Open-WBO](https://github.com/sat-group/open-wbo) an extensible and modular open-source MaxSAT Solver.
 
 The following changes have been made to the original open-wbo code:
+- Reject an empty soft-clause objective in `MaxSAT::isBMO()` so LinearSU uses
+  normal SAT search instead of indexing an empty vector of BMO weight levels.
 - The following optional parts have been removed to reduce size and complexity:
   - Unused solvers: glucose4.0, minisat, minisat2.2, riss
   - Additional materials in folders: tools, test, papers

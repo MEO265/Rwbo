@@ -216,6 +216,11 @@ uint64_t MaxSAT::computeCostModel(vec<lbool> &currentModel, uint64_t weight) {
   |________________________________________________________________________________________________@*/
 bool MaxSAT::isBMO(bool cache) {
   assert(orderWeights.size() == 0);
+  // BMO search needs at least one soft-clause weight level. An empty
+  // objective must use normal search instead of indexing an empty orderWeights.
+  if (maxsat_formula->nSoft() == 0)
+    return false;
+
   bool bmo = true;
   std::set<uint64_t> partitionWeights;
   std::map<uint64_t, uint64_t> nbPartitionWeights;
