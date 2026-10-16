@@ -14,11 +14,15 @@
 #' `-symmetry`/`-no-symmetry`, and `-print-model`/`-no-print-model`.
 #' Numeric settings use `-name=value` syntax, for example `-algorithm=1`,
 #' `-cpu-lim=60`, `-mem-lim=1024`, and `-verbosity=1`.
+#' The solver's CPU and memory limits are unavailable on Windows; use `timeout`
+#' to limit elapsed runtime on all platforms.
 #'
 #' Solver exit statuses 0, 10 (SAT), 20 (UNSAT), 30 (OPTIMUM), and 40 (UNKNOWN)
 #' return the captured output. Other exit statuses raise an error containing the
 #' status and any captured output. Solver diagnostics on stderr remain visible
 #' in the console.
+#' Output is captured through a temporary file to preserve complete physical
+#' lines, including long model assignments on Windows.
 #'
 #' @param args Character vector with one unquoted argument per element, passed
 #'   to `open-wbo_static`.
@@ -61,18 +65,19 @@ run_open_wbo <- function(args = character(), timeout = 0L) {
     stop("open-wbo_static not found. Please reinstall Rwbo.", call. = FALSE)
   }
 
-  # Non-zero statuses can represent valid solver results.
-  output <- suppressWarnings(system2(
+  # File capture avoids system2's splitting of long output lines on Windows.
+  output_file <- tempfile(pattern = "rwbo-stdout-")
+  on.exit(unlink(output_file), add = TRUE)
+
+  # With file capture, system2 returns the exit status directly.
+  status <- suppressWarnings(system2(
     bin_path,
     args = shQuote(args),
-    stdout = TRUE,
+    stdout = output_file,
     stderr = "",
     timeout = timeout
   ))
-  status <- attr(output, "status")
-  if (is.null(status)) {
-    status <- 0L
-  }
+  output <- readLines(output_file, warn = FALSE)
   if (!status %in% c(0L, 10L, 20L, 30L, 40L)) {
     error_message <- if (status == 124L) {
       paste0("open-wbo_static timed out after ", timeout, " seconds (exit status 124).")

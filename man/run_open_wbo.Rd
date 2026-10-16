@@ -31,11 +31,15 @@ Common solver options include toggles such as `-bmo`/`-no-bmo`,
 `-symmetry`/`-no-symmetry`, and `-print-model`/`-no-print-model`.
 Numeric settings use `-name=value` syntax, for example `-algorithm=1`,
 `-cpu-lim=60`, `-mem-lim=1024`, and `-verbosity=1`.
+The solver's CPU and memory limits are unavailable on Windows; use `timeout`
+to limit elapsed runtime on all platforms.
 
 Solver exit statuses 0, 10 (SAT), 20 (UNSAT), 30 (OPTIMUM), and 40 (UNKNOWN)
 return the captured output. Other exit statuses raise an error containing the
 status and any captured output. Solver diagnostics on stderr remain visible
 in the console.
+Output is captured through a temporary file to preserve complete physical
+lines, including long model assignments on Windows.
 }
 \examples{
 \donttest{

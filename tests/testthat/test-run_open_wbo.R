@@ -4,6 +4,12 @@ write_wcnf <- function(lines, prefix = "file") {
   return(wcnf)
 }
 
+runner_with_bindings <- function(...) {
+  runner <- run_open_wbo
+  environment(runner) <- list2env(list(...), parent = environment(run_open_wbo))
+  return(runner)
+}
+
 expect_optimal_wcnf <- function(output, wcnf, objective) {
   output_lines <- strsplit(output, "\n", fixed = TRUE)[[1L]]
   expect_identical(grep("^s ", output_lines, value = TRUE), "s OPTIMUM FOUND")
@@ -20,6 +26,7 @@ expect_optimal_wcnf <- function(output, wcnf, objective) {
   header <- scan(text = sub("^p wcnf ", "", wcnf_lines[[1L]]), quiet = TRUE)
   expect_length(model, header[[1L]])
   expect_setequal(abs(model), seq_len(header[[1L]]))
+  expect_identical(anyDuplicated(abs(model)), 0L)
 
   clauses <- lapply(wcnf_lines[-1L], function(line) {
     return(scan(text = line, quiet = TRUE))
@@ -45,6 +52,24 @@ test_that("run_open_wbo solves a tiny MaxSAT instance", {
   output <- run_open_wbo(args = wcnf)
 
   expect_optimal_wcnf(output, wcnf, objective = 1.0)
+})
+
+test_that("run_open_wbo preserves a long signed model from the real solver", {
+  variables <- seq_len(5000L)
+  literals <- ifelse(variables %% 2L == 0L, -variables, variables)
+  wcnf <- write_wcnf(c(
+    paste("p wcnf", length(variables), length(variables) + 1L, 10L),
+    paste(10L, literals, 0L),
+    "3 -1 0"
+  ))
+  output <- run_open_wbo(args = c("-algorithm=1", wcnf), timeout = 10L)
+
+  model_lines <- grep("^v ", strsplit(output, "\n", fixed = TRUE)[[1L]], value = TRUE)
+  expect_length(model_lines, 1L)
+  expect_gt(nchar(model_lines, type = "bytes"), 8095L)
+  model <- scan(text = sub("^v ", "", model_lines), quiet = TRUE)
+  expect_identical(model, as.numeric(literals))
+  expect_optimal_wcnf(output, wcnf, objective = 3.0)
 })
 
 test_that("LinearSU handles satisfiable and unsatisfiable WCNF without soft clauses", {
@@ -162,19 +187,152 @@ test_that("run_open_wbo includes solver diagnostics for a missing input file", {
 })
 
 test_that("run_open_wbo returns output for each valid solver exit status", {
+  results <- c("c regular exit", "s SATISFIABLE", "s UNSATISFIABLE", "s OPTIMUM FOUND", "s UNKNOWN")
   for (status in c(0L, 10L, 20L, 30L, 40L)) {
-    runner <- run_open_wbo
-    environment(runner) <- list2env(list(
+    output_file <- NULL
+    lines <- c("o 1", results[[match(status, c(0L, 10L, 20L, 30L, 40L))]])
+    runner <- runner_with_bindings(
       system.file = function(...) {
         return("open-wbo_static")
       },
-      system2 = function(...) {
-        return(structure(c("o 1", "s SATISFIABLE"), status = status))
+      system2 = function(command, args, stdout, stderr, timeout) {
+        output_file <<- stdout
+        writeLines(lines, stdout)
+        return(status)
       }
-    ), parent = environment(run_open_wbo))
+    )
 
-    expect_identical(runner(args = "input.wcnf"), "o 1\ns SATISFIABLE")
+    expect_identical(runner(args = "input.wcnf"), paste(lines, collapse = "\n"))
+    expect_false(file.exists(output_file))
   }
+})
+
+test_that("run_open_wbo preserves physical lines, spaces, and incomplete last lines", {
+  model_line <- paste("v", paste(c(seq_len(2500L), -seq_len(2500L)), collapse = " "))
+  lines <- c("c diagnostic  ", "", model_line, "s UNKNOWN", "", "c final line  ")
+  output_file <- NULL
+  runner <- runner_with_bindings(
+    system.file = function(...) {
+      return("solver with spaces & symbols")
+    },
+    system2 = function(command, args, stdout, stderr, timeout) {
+      expect_identical(command, "solver with spaces & symbols")
+      expect_identical(args, shQuote(c("-algorithm=1", "input with spaces & symbols.wcnf")))
+      expect_identical(stderr, "")
+      expect_identical(timeout, 7L)
+      expect_type(stdout, "character")
+      expect_length(stdout, 1L)
+      output_file <<- stdout
+      cat(paste(lines, collapse = "\n"), file = stdout)
+      return(40L)
+    }
+  )
+
+  expect_identical(
+    runner(c("-algorithm=1", "input with spaces & symbols.wcnf"), timeout = 7L),
+    paste(lines, collapse = "\n")
+  )
+  expect_false(file.exists(output_file))
+})
+
+test_that("run_open_wbo returns an empty string for empty stdout", {
+  output_file <- NULL
+  runner <- runner_with_bindings(
+    system.file = function(...) {
+      return("open-wbo_static")
+    },
+    system2 = function(command, args, stdout, stderr, timeout) {
+      output_file <<- stdout
+      writeLines(character(), stdout)
+      return(0L)
+    }
+  )
+
+  expect_identical(runner(), "")
+  expect_false(file.exists(output_file))
+})
+
+test_that("run_open_wbo reports unexpected exit statuses and removes stdout files", {
+  for (status in c(1L, 5L, 50L, 127L, 124L)) {
+    output_file <- NULL
+    lines <- c("c diagnostic", "", "s UNKNOWN")
+    runner <- runner_with_bindings(
+      system.file = function(...) {
+        return("open-wbo_static")
+      },
+      system2 = function(command, args, stdout, stderr, timeout) {
+        output_file <<- stdout
+        writeLines(lines, stdout)
+        warning("system2 status warning")
+        return(status)
+      }
+    )
+
+    error <- tryCatch(runner(timeout = 2L), error = identity)
+    expect_s3_class(error, "error")
+    message <- if (status == 124L) {
+      "open-wbo_static timed out after 2 seconds (exit status 124)."
+    } else {
+      paste0("open-wbo_static failed with exit status ", status, ".")
+    }
+    expect_identical(conditionMessage(error), paste(c(message, lines), collapse = "\n"))
+    expect_false(file.exists(output_file))
+  }
+})
+
+test_that("run_open_wbo treats exit status 5 with empty stdout as an error", {
+  output_file <- NULL
+  runner <- runner_with_bindings(
+    system.file = function(...) {
+      return("open-wbo_static")
+    },
+    system2 = function(command, args, stdout, stderr, timeout) {
+      output_file <<- stdout
+      writeLines(character(), stdout)
+      return(5L)
+    }
+  )
+
+  error <- tryCatch(runner(), error = identity)
+  expect_s3_class(error, "error")
+  expect_identical(conditionMessage(error), "open-wbo_static failed with exit status 5.")
+  expect_false(file.exists(output_file))
+})
+
+test_that("run_open_wbo removes stdout files when launching or reading fails", {
+  for (failure in c("launch", "read")) {
+    output_file <- NULL
+    runner <- runner_with_bindings(
+      system.file = function(...) {
+        return("open-wbo_static")
+      },
+      system2 = function(command, args, stdout, stderr, timeout) {
+        output_file <<- stdout
+        writeLines("c partial output", stdout)
+        if (failure == "launch") {
+          stop("launch failed")
+        }
+        return(0L)
+      },
+      readLines = function(...) {
+        stop("read failed")
+      }
+    )
+
+    expect_error(runner(), paste(failure, "failed"), fixed = TRUE)
+    expect_false(file.exists(output_file))
+  }
+})
+
+test_that("run_open_wbo can capture to a path containing spaces and ampersands", {
+  wcnf <- write_wcnf(c("p wcnf 1 2 2", "2 1 0", "1 -1 0"))
+  output_file <- tempfile(pattern = "stdout with spaces & ")
+  runner <- runner_with_bindings(tempfile = function(...) {
+    return(output_file)
+  })
+
+  expect_optimal_wcnf(runner(wcnf), wcnf, objective = 1.0)
+  expect_false(file.exists(output_file))
 })
 
 test_that("run_open_wbo reports a missing bundled binary", {
@@ -209,18 +367,27 @@ test_that("run_open_wbo rejects invalid timeouts", {
 
 test_that("run_open_wbo enforces its elapsed-time limit", {
   script <- tempfile(fileext = ".R")
+  on.exit(unlink(script), add = TRUE)
   writeLines("Sys.sleep(10)", script)
   rscript_name <- if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript"
   rscript_path <- file.path(R.home("bin"), rscript_name)
 
-  runner <- run_open_wbo
-  environment(runner) <- list2env(list(system.file = function(...) {
-    return(rscript_path)
-  }), parent = environment(run_open_wbo))
+  output_file <- tempfile(pattern = "timeout stdout ")
+  runner <- runner_with_bindings(
+    system.file = function(...) {
+      return(rscript_path)
+    },
+    tempfile = function(...) {
+      return(output_file)
+    }
+  )
 
+  start <- proc.time()[["elapsed"]]
   expect_error(
     runner(args = c("--vanilla", script), timeout = 1L),
     "open-wbo_static timed out after 1 seconds (exit status 124).",
     fixed = TRUE
   )
+  expect_lt(proc.time()[["elapsed"]] - start, 8.0)
+  expect_false(file.exists(output_file))
 })
