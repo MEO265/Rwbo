@@ -1,9 +1,10 @@
 INSTDIR=../inst
+OPENWBO_MAKE_FLAGS = CXX="$(CXX)" CPPFLAGS="$(CPPFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 all: wbo
 
 wbo:
-	cd open_wbo && $(MAKE) rs
+	cd open_wbo && $(MAKE) rs $(OPENWBO_MAKE_FLAGS)
 	mkdir -p $(INSTDIR)/bin
 	cp -f open_wbo/open-wbo_static$(EXEEXT) $(INSTDIR)/bin/open-wbo_static$(EXEEXT)
 
@@ -11,7 +12,7 @@ clean: clean-src clean-wbo
 
 clean-src:
 	rm -f *.o *.so *.rds
-	rm -r $(INSTDIR)
+	rm -f "$(INSTDIR)/bin/open-wbo_static" "$(INSTDIR)/bin/open-wbo_static.exe"
 
 clean-wbo:
 	cd open_wbo && $(MAKE) allclean
